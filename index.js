@@ -5,7 +5,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const User = require('./models/user');
-const UserLog = require('./models/log');
 const UserExercise = require('./models/exercise');
 
 // Basic Configuration
@@ -94,7 +93,49 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   });
 });
 
-app.get('/api/users/:_id/logs', (req, res) => {});
+app.get('/api/users/:_id/logs', (req, res) => {
+  const user = User.findById(req.params._id);
+  const from = req.query.from ? new Date(req.query.from) : null;
+  const to = req.query.to ? new Date(req.query.to) : null;
+  const limit = req.query.limit ? parseInt(req.query.limit) : 0;
+
+  if (!user) return res.json({error: "User not found."});
+
+  const log = [];
+
+  const params = {username: user.username};
+
+  if(from || to) {
+    params.date = {};
+    if(from) {
+      params.date.$gte = from;
+    }
+    if(to) {
+      params.date.$lte = to;
+    }
+  }
+
+  if(limit > 0) {
+    params.limit = limit;
+  }
+
+  const exercises = UserExercise.find({username: user.username});
+
+  exercises.forEach(exercise => {
+    log.push({
+      description: exercise.description,
+      duration: exercise.duration,
+      date: exercise.date.toDateString()
+    });
+  });
+
+  return res.json({
+    username: user.username,
+    _id: user._id,
+    count: log.length,
+    log: log
+  });
+});
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
