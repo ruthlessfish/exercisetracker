@@ -60,12 +60,12 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
     return res.json({error: "Description, duration and userId are required."});
   }
 
-  const user = User.findById(req.params._id);
+  const user = await User.findById(req.params._id);
 
   if (!user) return res.json({error: "User not found."});
 
   const exercise = new UserExercise({
-    userId: req.params._id,
+    username: user.username,
     description: req.body.description,
     duration: req.body.duration,
     date: req.body.date ? new Date(req.body.date) : new Date()
@@ -93,7 +93,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   });
 });
 
-app.get('/api/users/:_id/logs', (req, res) => {
+app.get('/api/users/:_id/logs', async (req, res) => {
   const user = User.findById(req.params._id);
   const from = req.query.from ? new Date(req.query.from) : null;
   const to = req.query.to ? new Date(req.query.to) : null;
@@ -119,15 +119,17 @@ app.get('/api/users/:_id/logs', (req, res) => {
     params.limit = limit;
   }
 
-  const exercises = UserExercise.find({username: user.username});
+  const exercises = await UserExercise.find({username: user.username});
 
-  exercises.forEach(exercise => {
-    log.push({
-      description: exercise.description,
-      duration: exercise.duration,
-      date: exercise.date.toDateString()
+  if(exercises) {
+    exercises.forEach(exercise => {
+      log.push({
+        description: exercise.description,
+        duration: exercise.duration,
+        date: exercise.date.toDateString()
+      });
     });
-  });
+  }
 
   return res.json({
     username: user.username,
