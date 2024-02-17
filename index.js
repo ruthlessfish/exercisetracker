@@ -73,23 +73,12 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 
   await exercise.save();
 
-  const log = [];
-
-  const exercises = await UserExercise.find({username: user.username});
-
-  exercises.forEach(exercise => {
-    log.push({
-      description: exercise.description,
-      duration: exercise.duration,
-      date: exercise.date.toDateString()
-    });
-  });
-
   return res.json({
     username: user.username,
+    description: exercise.description,
+    duration: exercise.duration,
+    date: exercise.date.toDateString(),
     _id: user._id,
-    count: log.length,
-    log: log
   });
 });
 
@@ -124,8 +113,8 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   if(exercises) {
     exercises.forEach(exercise => {
       log.push({
-        description: exercise.description,
-        duration: exercise.duration,
+        description: exercise.description.toString(),
+        duration: parseInt(exercise.duration),
         date: exercise.date.toDateString()
       });
     });
