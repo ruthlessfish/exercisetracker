@@ -83,32 +83,33 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 });
 
 app.get('/api/users/:_id/logs', async (req, res) => {
-  const user = User.findById(req.params._id);
-  const from = req.query.from ? new Date(req.query.from) : null;
-  const to = req.query.to ? new Date(req.query.to) : null;
+  const user = await User.findById(req.params._id);
+  // const from = req.query.from ? new Date(req.query.from) : null;
+  // const to = req.query.to ? new Date(req.query.to) : null;
   const limit = req.query.limit ? parseInt(req.query.limit) : 0;
 
   if (!user) return res.json({error: "User not found."});
 
   const log = [];
 
-  const params = {username: user.username};
+  const filter = {username: user.username};
+  const options = {};
 
-  if(from || to) {
-    params.date = {};
-    if(from) {
-      params.date.$gte = from;
+  if(req.query.from || req.query.to) {
+    filter.date = {};
+    if(req.query.from) {
+      filter.date.$gte = req.query.from;
     }
-    if(to) {
-      params.date.$lte = to;
+    if(req.query.to) {
+      filter.date.$lte = req.query.to;
     }
   }
 
   if(limit > 0) {
-    params.limit = limit;
+    options.limit = limit;
   }
 
-  const exercises = await UserExercise.find({username: user.username});
+  const exercises = await UserExercise.find(filter, null, options);
 
   if(exercises) {
     exercises.forEach(exercise => {
