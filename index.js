@@ -4,6 +4,9 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const UserModel = require('./models/user');
+const LogModel = require('./models/log');
+const ExerciseModel = require('./models/exercise');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -25,10 +28,14 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/users', (req, res) => {
-  return res.json([]);
+  if( ! req.body.username){
+    return res.json({error: "Username is required."});
+  }
 });
 
-app.get('/api/users', (req, res) => {});
+app.get('/api/users', (req, res) => {
+  return res.json([]);
+});
 
 app.post('/api/users/:_id/exercises', (req, res) => {});
 
